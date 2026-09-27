@@ -1,31 +1,14 @@
 import { createBrowserClient } from '@supabase/ssr';
-import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 // Browser client for client components
 export function createBrowserSupabaseClient() {
   return createBrowserClient(supabaseUrl, supabaseAnonKey);
 }
 
-// Server client for server components
-export function createServerSupabaseClient(cookies?: any) {
-  return createClient(supabaseUrl, supabaseAnonKey, {
-    auth: {
-      autoRefreshToken: true,
-      persistSession: true,
-      detectSessionInUrl: true,
-    },
-    global: {
-      headers: {
-        cookie: cookies ? Object.entries(cookies).map(([k, v]) => `${k}=${v}`).join('; ').slice(0, 4000) : undefined,
-      } as any,
-    },
-  });
-}
-
-// For backwards compatibility
+// For backwards compatibility - create client directly
 export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey);
 
 // Types

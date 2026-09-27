@@ -30,18 +30,39 @@ export default function AuthPage() {
     try {
       if (isLogin) {
         const { error } = await signIn(email, password);
-        if (error) setError(error.message);
-        else router.push('/dashboard');
+        if (error) {
+          setError(error.message || 'Invalid credentials. Please check your email and password.');
+        } else {
+          // Wait a moment for state to update
+          await new Promise(resolve => setTimeout(resolve, 500));
+          router.push('/dashboard');
+        }
       } else {
         const { error } = await signUp(email, password, name);
-        if (error) setError(error.message);
-        else router.push('/dashboard');
+        if (error) {
+          setError(error.message || 'Sign up failed. Please try again.');
+        } else {
+          setError('');
+          alert('Account created! Please check your email to confirm your account, then sign in.');
+          setIsLogin(true);
+        }
       }
     } catch (err: any) {
-      setError(err.message || 'An error occurred');
+      setError(err.message || 'An unexpected error occurred');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setError('');
+    setIsLoading(true);
+    const { error } = await signInWithGoogle();
+    if (error) {
+      setError(error.message || 'Google sign in failed');
+      setIsLoading(false);
+    }
+    // If successful, user will be redirected
   };
 
   if (loading) {
@@ -100,7 +121,7 @@ export default function AuthPage() {
             <label className="block text-sm font-medium text-foreground mb-1">Password</label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-              <input type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required minLength={6}
+              <input type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter your password" required minLength={6}
                 className="w-full pl-10 pr-12 py-3 border border-input rounded-lg bg-background outline-none transition" />
               <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -121,7 +142,7 @@ export default function AuthPage() {
           </div>
         </div>
 
-        <button onClick={signInWithGoogle} disabled={isLoading}
+        <button onClick={handleGoogleSignIn} disabled={isLoading}
           className="w-full border border-border hover:bg-muted text-foreground font-semibold py-3 rounded-lg transition flex items-center justify-center gap-2 disabled:opacity-50">
           <Chrome className="w-5 h-5" /> Google
         </button>
